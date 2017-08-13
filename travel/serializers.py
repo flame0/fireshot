@@ -5,12 +5,11 @@ import time
 
 
 class TimestampField(serializers.Field):
-    def to_native(self, value):
-        epoch = datetime.datetime(1970,1,1)
-        return int((value - epoch).total_seconds())
+    def to_representation(self, value):
+        return int(time.mktime(value.timetuple()))
 
-    def to_internal_value(self,data):
-        pass
+    def to_internal_value(self, data):
+        return datetime.datetime.utcfromtimestamp(int(data))
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,12 +23,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=False)
+
     class Meta:
         model = Location
         fields = '__all__'
 
 
 class VisitSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=False)
+    visited_at = TimestampField()
+
     class Meta:
         model = Visit
         fields = '__all__'

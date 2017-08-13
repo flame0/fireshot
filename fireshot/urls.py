@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url, include
 from rest_framework_nested import routers
 from travel.views import *
@@ -22,10 +23,12 @@ router.register(r'users', UserViewSet)
 router.register(r'locations', LocationViewSet)
 router.register(r'visits', VisitViewSet)
 
-users_router = routers.NestedSimpleRouter(router, r'users', lookup='users')
-users_router.register(r'visits', VisitViewSet, base_name='users-visits')
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^', include(users_router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
