@@ -13,7 +13,11 @@ from .serializers import UserSerializer, LocationSerializer, VisitSerializer
 from django.db.models import Avg
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from datetime import date
 
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 class CacheMixin(object):
     cache_timeout = 60
@@ -69,7 +73,25 @@ class LocationViewSet(viewsets.ModelViewSet, NewMixin):
 
     @detail_route(methods=['get'])
     def avg(self, request, pk=None):
-        locations_avg = Location.objects.filter(pk=pk).aggregate(avg=Avg('visit__mark'))
+        data = request.GET
+        from_date = data.get('fromDate')
+        to_date = data.get('toDate')
+        from_age = data.get('fromAge')
+        to_age = data.get('toAge')
+        gender = data.get('gender')
+
+        filter_ = {
+            "pk": pk,
+            "visit__visited_at__gt": from_date,
+            "visit__visited_at__lt": to_date,
+            "visit__user__gender": gender,
+
+        }
+        for x in list(filter_.keys()):
+            if not filter_[x]:
+                del filter_[x]
+
+        locations_avg = Location.objects.filter(**filter_).aggregate(avg=Avg('visit__mark'))
         return Response(locations_avg)
 
 
