@@ -13,7 +13,10 @@ from .serializers import UserSerializer, LocationSerializer, VisitSerializer
 from django.db.models import Avg
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-from datetime import date
+from datetime import datetime
+from datetime import timedelta
+import time
+from dateutil.relativedelta import relativedelta
 
 def calculate_age(born):
     today = date.today()
@@ -78,6 +81,8 @@ class LocationViewSet(viewsets.ModelViewSet, NewMixin):
         to_date = data.get('toDate')
         from_age = data.get('fromAge')
         to_age = data.get('toAge')
+        to_age_datetime = datetime.now() - relativedelta(years=to_age)
+        to_age_timestamp = time.mktime(to_age_datetime.timetuple())
         gender = data.get('gender')
 
         filter_ = {
@@ -85,6 +90,7 @@ class LocationViewSet(viewsets.ModelViewSet, NewMixin):
             "visit__visited_at__gt": from_date,
             "visit__visited_at__lt": to_date,
             "visit__user__gender": gender,
+            "visit__user__birth_date__gt": gender,
 
         }
         for x in list(filter_.keys()):

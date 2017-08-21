@@ -21,6 +21,7 @@ if [ ! -f /app/password.txt ] ; then
     sed -i "s|os.path.join(BASE_DIR, 'db.sqlite3')|'django',\n        'HOST': '127.0.0.1',\n        'USER': 'django',\n        'PASSWORD': '$POSTGRES_DJANGO_PASSWORD'|g" $SETTING_PATH
 
     python3 /app/manage.py migrate
+    python3 /app/manage.py collectstatic --noinput
     /etc/init.d/postgresql stop
 fi
 
